@@ -1,4 +1,4 @@
-# ExpertSystem - Ongoing Project
+# Expert System - Ongoing Project
 
 For further information, please view the following google document: 
 
