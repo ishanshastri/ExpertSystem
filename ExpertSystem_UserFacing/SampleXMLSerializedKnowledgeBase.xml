@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<KnowledgeBase xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Fact id="lineIsLeaking" type="boolean" />
+  <Fact id="voltageToTransformer" type="float" />
+  <Fact id="possibleFuelLeak" type="boolean" />
+  <Observation id="fuelSmell" type="enum_level" />
+  <Rule>
+    <If>
+      <or_if>$factId:lineIsLeaking.equals(true)</or_if>
+      <or_if>$factId:fuelSmell.equals(level.high)</or_if>
+    </If>
+    <If>
+      <or_if>$factId:voltageToTransformer.equals(210.00)</or_if>
+    </If>
+    <Then>
+      <assert>$factId:possibleFuelLeak.set(true)</assert>
+    </Then>
+  </Rule>
+</KnowledgeBase>
