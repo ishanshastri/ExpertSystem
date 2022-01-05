@@ -17,3 +17,5 @@ SERIALIZATION:
 3. Use the XML serializer to write the top-level class (ProxyKnowledgeBase) to an XML file
 
 View the included sample XML file to see how a simple knowledge-base is organized.
+
+The program file contains the Main method to run a command-line program for testing the serialization, deserialization and validation of a knowledge-base
