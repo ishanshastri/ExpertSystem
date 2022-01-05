@@ -18,4 +18,4 @@ SERIALIZATION:
 
 View the included sample XML file to see how a simple knowledge-base is organized.
 
-The program file contains the Main method to run a command-line program for testing the serialization, deserialization and validation of a knowledge-base
+The program file contains the Main method to run a command-line program for testing the serialization, deserialization and validation of a dummy knowledge-base
