@@ -3,100 +3,59 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 
-namespace ExpertSystem
+namespace ExpertSystem_2
     {
-    /// <summary>
-    /// Rules for the knowledge base
-    /// </summary>
-    /// <seealso cref="ExpertSystem.iRule" />
-    //[XmlType ("GenericFact")]
-    [Serializable]
-    class Rule : iRule
+    class Rule
         {
         /// <summary>
         /// The clauses
         /// </summary>
-        private List<Clause> Clauses;
+        private List<Clause> clauses;
 
         /// <summary>
-        /// The fact setter
+        /// The assertions
         /// </summary>
-        //private List<FactSetter> _FactSetters;
+        private List<Assertion> assertions;
 
-        private Dictionary<IGenericFactAndObservation, object> AssertionMap;
         /// <summary>
-        /// Initializes a new instance of the <see cref="Rule" /> class.
+        /// The rule's identifier
         /// </summary>
-        /// <param name="clauses">The clauses. (IEnumerable)</param>
-        /// <param name="assertedFacts">The asserted facts.</param>
-        public Rule(IEnumerable<Clause> clauses = null, Dictionary<IGenericFactAndObservation, Object> assertedFacts = null)
+        private string id;
+
+        /// <summary>
+        /// Gets or sets the rule's rank (for conflict resolution)
+        /// </summary>
+        /// <value>
+        /// The rank.
+        /// </value>
+        public int Rank { get; set; }
+
+        public Rule(List<Clause> clauses, List<Assertion> assertions, string id = "")
             {
-            this.Clauses = (clauses == null) ? new List<Clause>() : (List<Clause>)clauses;
-            this.AssertionMap = (assertedFacts == null) ? new Dictionary<IGenericFactAndObservation, Object>() : assertedFacts;
-            //this._FactSetters = new List<FactSetter>();
-            //Add event listeners for when a fact value is changed
-            this.GetEventListeners();
+            this.clauses = clauses;
+            this.assertions = assertions;
+            this.id = id;
             }
 
-        //Go through each fact, and get eventlistners from each fact's factSetter
-        private void GetEventListeners()
+        public Rule(ProxyRule pr)
             {
-            IEnumerable<IGenericFactAndObservation> facts;
-            foreach (Clause c in this.Clauses)
+            this.id = pr.ID;
+            }
+
+        private void consumeProxyRule(ProxyRule pr)
+            {
+            this.id = pr.ID;
+
+            //Consume proxy clauses and conditions (IF PART)
+            foreach(IfPart ip in pr.Clauses)
                 {
-                facts = c.GetAllFacts();
-                foreach (IGenericFactAndObservation f in facts)
+                foreach(string condition in ip.conditions)
                     {
-                   // f.GetFactSetter().OnFactValueChanged += Rule_OnFactValueChanged;//OLD
-                    f.OnFactValueChanged += F_OnFactValueChanged;
+                    //STUB
                     }
                 }
             }
-
-        /// <summary>
-        ///  fired when fact value changed.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e (The fact whose value has changed).</param>
-        private void F_OnFactValueChanged(object sender, IGenericFactAndObservation e)
-            {
-            Console.WriteLine(string.Format("Fact {0} changed to {1}: ", e.GetName(), e.GetValue()));
-         //   this.Evaluate();
-            }
-
-        /// <summary>
-        /// Eventhandler fires when the vaule of a fact of interest changes; the rule is evaluated in real time for each changing value of a concerned fact
-        /// </summary>
-        /// <param name="sender">The sender (Fact).</param>
-        /// <param name="e">null</param>
-    /*    private void Rule_OnFactValueChanged(object sender, FactSetter e)//OLD
-            {
-            Console.WriteLine("Fact Value Changed: " + ((FactSetter)sender).FactName);
-            this.Evaluate();
-            }
-        */
-
-        /*
-/// <summary>
-/// Checks if the clauses have been met.
-/// </summary>
-/// <returns>
-/// whether the rule's clauses have been met (boolean); clauses MUST be known
-/// </returns>
-public bool AllClausesMet()
-{
-foreach(Clause c in this.Clauses)//Loop through each clause 
-   {
-   if (!c.GetState().Equals(State.True))//If a clause is false, then rule is false
-       {
-       return false;
-       }
-   }
-return true;
-}
-*/
 
         /// <summary>
         /// Evaluates the rule.
@@ -118,31 +77,30 @@ return true;
                 {
                 return State.Undefined;
                 }
-            MakeAssertionRequest();//Verify if this is the correct location
+            this.assert();
             return State.True;
             }
 
         /// <summary>
-        /// Gets all the clauses.
+        /// Asserts all assertions to be made (invoked when rule evaluates to true).
         /// </summary>
-        /// <returns>collection of clauses (IEnumerable)</returns>
-        public IEnumerable<Clause> GetAllClauses()
+        private void assert()
             {
-           // bool allClausesWanted = (s == null);
-            List<Clause> clauses = new List<Clause>();
-            foreach (Clause c in this.Clauses)
+            foreach(Assertion a in this.assertions)
                 {
-              //  if (c.Evaluate() == s || allClausesWanted)
-                //    {
-                    clauses.Add(c);
-                  //  }
+                a.Assert();
                 }
-            return clauses;
             }
-        public IEnumerable<Clause> GetClausesInState(State s)
+
+        /// <summary>
+        /// Gets all clauses in in specified state.
+        /// </summary>
+        /// <param name="s">The state.</param>
+        /// <returns>collection of clauses</returns>
+        private IEnumerable<Clause> GetClausesInState(State s)
             {
             List<Clause> clauses = new List<Clause>();
-            foreach (Clause c in this.Clauses)
+            foreach (Clause c in this.clauses)
                 {
                 if (c.Evaluate() == s)
                     {
@@ -151,18 +109,19 @@ return true;
                 }
             return clauses;
             }
-       
+
         /// <summary>
         /// Gets the undefined facts.
         /// </summary>
         /// <returns>Collection of facts (IEnumerable)</returns>
-        public IEnumerable<IGenericFactAndObservation> GetUndefinedFacts()//Not sure if needed
+        public IEnumerable<Fact> GetUndefinedFacts()//Not sure if needed
             {
             List<Clause> clauses = (List<Clause>)GetClausesInState(State.Undefined);
-            List<IGenericFactAndObservation> undefinedFacts = new List<IGenericFactAndObservation>();
-            foreach(Clause c in clauses)
+            List<Fact> undefinedFacts = new List<Fact>();
+            foreach (Clause c in clauses)
                 {
-                foreach(IGenericFactAndObservation f in c.GetFacts(FactState.Undefined)){
+                foreach (Fact f in c.GetFacts(FactState.Undefined))
+                    {
                     undefinedFacts.Add(f);
                     }
                 }
@@ -170,70 +129,35 @@ return true;
             }
 
         /// <summary>
-        /// Gets the facts.
+        /// Gets the undefined observations.
         /// </summary>
-        /// <param name="s">The s.</param>
-        /// <returns>collection of facts (IEnumerable)</returns>
-        public IEnumerable<IGenericFactAndObservation> GetFacts(FactState? s = null)
+        /// <returns>Collection of observations (IEnumerable)</returns>
+        public IEnumerable<Observation> GetUndefinedObservations()//Not sure if needed
             {
-            List<Clause> clauses = this.Clauses;
-            Stack<IGenericFactAndObservation> facts = new Stack<IGenericFactAndObservation>();
-            bool allFactsWanted = (s == null);
-            foreach(Clause c in clauses)
+            List<Clause> clauses = (List<Clause>)GetClausesInState(State.Undefined);
+            List<Observation> undefinedObservations = new List<Observation>();
+            foreach (Clause c in clauses)
                 {
-                foreach(IGenericFactAndObservation f in c.GetAllFacts())
+                foreach (Observation o in c.GetObservations(FactState.Undefined))
                     {
-                    if(f.GetState() == s || allFactsWanted)
-                        {
-                        facts.Push(f);
-                        }
+                    undefinedObservations.Add(o);
                     }
                 }
-            return (IEnumerable<IGenericFactAndObservation>)facts;
+            return undefinedObservations;
             }
 
         /// <summary>
-        /// Gets the facts and observations asserted by the rule.
+        /// Gets the asserted facts.
         /// </summary>
-        /// <returns>a collection of facts and observations</returns>
-        public IEnumerable<IGenericFactAndObservation> GetAssertedFactsAndObs()
+        /// <returns>a collection of facts</returns>
+        public List<Fact> GetAssertedFacts()
             {
-            return this.AssertionMap.Keys;
-            }
-
-        /// <summary>
-        /// Makes the assertion request.
-        /// </summary>
-        private void MakeAssertionRequest()//public?
-            {
-            foreach(IGenericFactAndObservation f in this.AssertionMap.Keys)
+            List<Fact> result = new List<Fact>();
+            foreach(Assertion a in this.assertions)
                 {
-                //this._FactSetter.AssertFact(f, this.AssertionMap[f], this);STUB
+                result.Add(a.GetFact());
                 }
+            return result;
             }
-        /*
-        /// <summary>
-        /// Checks the state of the rule, based on clauses connected by AND statements.
-        /// </summary>
-        /// <returns>the state</returns>
-        public State GetRuleState()
-            {
-            bool possiblyUnkown = false;
-            bool possiblyUndefined = false;
-            State state = State.True;
-            foreach (Clause c in this.Clauses)//Loop through each clause 
-                {
-                state = c.GetState();
-                if (state == State.False)//If a clause is false, then rule is false
-                    {
-                    return state;
-                    }
-                if(state == State.Unknown) { possiblyUnkown = true; }
-                if(state == State.Undefined) { possiblyUndefined = true; }
-                }
-            if (possiblyUnkown) { return State.Unknown; }//If no false clause, and if there are any unkown clauses, return unkown
-            if(possiblyUndefined) { return State.Undefined; }//If no false or unkown clause, and if there are any undefined clauses, return undefined
-            return State.True;//If no false, unknown or undefined clauses, there are only true clauses -> return true
-            }*/
         }
     }
