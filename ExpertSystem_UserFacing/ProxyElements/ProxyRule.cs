@@ -9,13 +9,13 @@ namespace ExpertSystem_2
     {
     [Serializable]
     [XmlType("Rule")]
-    public class ProxyRule : IProxy
+    public class ProxyRule : ProxyElement, IProxy
         {
         /// <summary>
         /// The name/id of the rule
         /// </summary>
-        [XmlAttribute("RuleId")]
-        public string id;
+        //[XmlAttribute("ID")]
+        //public string ID;
 
         /// <summary>
         /// The collection of clauses that make up 'if part' (each element connected by AND)

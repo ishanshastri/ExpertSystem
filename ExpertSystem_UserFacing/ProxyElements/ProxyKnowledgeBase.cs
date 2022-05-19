@@ -40,7 +40,7 @@ namespace ExpertSystem_2
             {
             foreach(ProxyFact f in Facts)
                 {
-                if (f.id.Equals(fid))
+                if (f.ID.Equals(fid))
                     {
                     return true;
                     }
@@ -56,7 +56,7 @@ namespace ExpertSystem_2
             {
             ValidationResult result = new ValidationResult();
             //Check for different errors  
-            Error err = error_duplicateFact();//#1: for duplicate fact error
+            Diagnostic err = error_duplicateFact();//#1: for duplicate fact error
             if (err != null)
                 {
                 result.AddError(err);
@@ -77,16 +77,16 @@ namespace ExpertSystem_2
         /// Duplicates the fact.
         /// </summary>
         /// <returns></returns>
-        private Error error_duplicateFact()//make return type Error/boolean
+        private Diagnostic error_duplicateFact()//make return type Error/boolean
             {
             HashSet<string> factIds = new HashSet<string>();
             foreach(ProxyFact f in Facts)
                 {
-                if(factIds.Contains(f.id))
+                if(factIds.Contains(f.ID))
                     {
-                    return new Error("duplicate_fact_error", "There is a duplicate Fact in the Knowledge Base: " + f.id);
+                    return new Diagnostic("duplicate_fact_error", "There is a duplicate Fact in the Knowledge Base: " + f.ID);
                     }
-                factIds.Add(f.id);
+                factIds.Add(f.ID);
                 }
             return null;
             }
@@ -95,7 +95,7 @@ namespace ExpertSystem_2
         /// Error: The fact referenced in a rule does not exist
         /// </summary>
         /// <returns></returns>
-        private Error error_factDoesNotExist()
+        private Diagnostic error_factDoesNotExist()
             {
             IEnumerable<string> ids;
             foreach(ProxyRule r in Rules)
@@ -104,7 +104,7 @@ namespace ExpertSystem_2
                 foreach(string id in ids){
                     if (!isInFactList(id))
                         {
-                        return new Error("nonexistent_fact", "A fact referenced in a rule does not exist in the Knowledge Base: " + id);
+                        return new Diagnostic("nonexistent_fact", "A fact referenced in a rule does not exist in the Knowledge Base: " + id);
                         }
                     }
                 }
@@ -172,3 +172,16 @@ namespace ExpertSystem_2
             }
         }
     }
+/*
+/// <summary>
+/// The fact IDs
+/// </summary>
+[XmlElement("Fact List")]
+public List<string> FactIDs;
+
+/// <summary>
+/// The observation IDs
+/// </summary>
+[XmlElement("Observation List")]
+public List<string> ObservationIDs;
+*/

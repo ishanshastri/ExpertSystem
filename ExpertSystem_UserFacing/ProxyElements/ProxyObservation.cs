@@ -9,14 +9,14 @@ namespace ExpertSystem_2
     {
     [Serializable]
     [XmlType("observation")]
-    public class ProxyObservation : IProxy
+    public class ProxyObservation : ProxyElement, IProxy
         {
         #region Common Properties
         /// <summary>
         /// The identifier of the fact
         /// </summary>
-        [XmlAttribute]
-        public string id;
+        //[XmlAttribute]
+        //public string ID;
 
         /// <summary>
         /// The type of the fact
