@@ -4,81 +4,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ExpertSystem
+namespace ExpertSystem_2
     {
-    [Serializable]
     class Clause
         {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Clause" /> class.
+        /// The collection of tests (or conditions)
         /// </summary>
-        /// <param name="FactsWithConditions">The facts with conditions.</param>
-        public Clause(Dictionary<IGenericFactAndObservation, ITest> FactsWithConditions = null, List<ITest> tests = null)
-            {
-            //this.ConditionMap = (FactsWithConditions == null) ? new Dictionary<IGenericFact, Test<string>>() : FactsWithConditions;//OLD
-            this.Tests = (tests == null) ? new List<ITest>() : tests;
-            }
+        private List<Test> tests;
 
-        /// <summary>
-        /// The condition map (OLD)
-        /// </summary>
-       // private Dictionary<IGenericFact, Test<String>> ConditionMap;
-
-        /*new*/
-        private List<ITest> Tests;
-        /// <summary>
-        /// The facts that the clause evaluates.
-        /// </summary>
-        /// <returns>Collection of facts</returns>
-        public IEnumerable<IGenericFactAndObservation> GetAllFacts()
+        public Clause(List<Test> tests)
             {
-            List<IGenericFactAndObservation> ifacts = new List<IGenericFactAndObservation>();
-            foreach(ITest it in this.Tests)
-                {
-                ifacts.Add(it.GetFact());
-                }
-            return ifacts;
+            this.tests = tests;
             }
 
         /// <summary>
         /// Evaluates the clause.
         /// </summary>
-        /// <returns>
-        /// State of clause (enum)
-        /// </returns>
-        public State EEvaluate()
-            {
-            IEnumerable<IGenericFactAndObservation> knownFacts = this.GetFacts(FactState.Known);
-            if (knownFacts.Count() != 0)
-                {
-                State s = new State();
-                foreach (IGenericFactAndObservation f in knownFacts)
-                    {
-                    s = State.False;//this.EvaluateCondition(f, this.ConditionMap[f]);
-                    if (s == State.True)
-                        {
-                        return State.True;
-                        }
-                    }
-                }
-            if (GetFacts(FactState.Undefined).Count() != 0)
-                {
-                return State.Undefined;
-                }
-            if (GetFacts(FactState.Unknown).Count() != 0)
-                {
-                return State.Unknown;
-                }
-            return State.False;
-            }
-
+        /// <returns>the evaluation result (clause)</returns>
         public State Evaluate()
             {
-            bool possUnknown = false;
-            bool possUndef = false;
-            foreach (ITest it in this.Tests)
+            bool possUnknown = false;//There is an unknown fact/observation
+            bool possUndef = false;//There is an undefined fact/observationn
+            foreach (Test it in this.tests)
                 {
-                State s = it.TestState();
+                State s = it.Evaluate();
                 switch (s)
                     {
                     case State.True:
@@ -91,183 +41,55 @@ namespace ExpertSystem
                         break;
                     }
                 }
-            if (possUndef)
+            if (possUndef)//If not true but possible undefined
                 {
-                return State.Undefined;
+                return State.Undefined;//If not true but possible undefined
                 }
-            if (possUnknown)
+            if (possUnknown)//If not true or undefined but possibly unknown
                 {
                 return State.Unknown;
                 }
-            return State.False;
+            return State.False;//If none of the above conditions, then the clause must  be false
             }
 
         /// <summary>
         /// Gets the facts in a specified state.
         /// </summary>
         /// <returns>Collection of  facts (IEnumerable)</returns>
-        public IEnumerable<IGenericFactAndObservation> GetFacts(FactState s)
+        public IEnumerable<Fact> GetFacts(FactState s)
             {
-            Stack<IGenericFactAndObservation> facts = new Stack<IGenericFactAndObservation>();
-            //bool allFactsWanted = (s == null);
-            IEnumerable<IGenericFactAndObservation> allFacts = this.GetAllFacts();
-            foreach (IGenericFactAndObservation f in allFacts)
+            List<Fact> facts = new List<Fact>();
+
+            Fact f;
+            foreach (Test t in this.tests)
                 {
-                if (f.GetState() == s)//||allFactsWanted
+                f = t.Fact;
+                if (f != null && f.GetState() == s)
                     {
-                    facts.Push(f);
+                    facts.Add(f);
                     }
                 }
-            return (IEnumerable<IGenericFactAndObservation>)facts;
+            return (IEnumerable<Fact>)facts;
             }
 
         /// <summary>
-        /// Evaluates the condition.
+        /// Gets the observations in a specified state.
         /// </summary>
-        /// <param name="fact">The fact.</param>
-        /// <param name="test">The test.</param>
-        /// <returns>State of condition</returns>
-        /*    private State EvaluateCondition(IGenericFact fact, Test test)
-                {
-                FactState s = fact.GetState();
-                //return test
-                if(s == FactState.Known)
-                    {
-                    bool conditionResult = false;
-                    if (test.ComparisonOperator == Comparison.EqualTo) { conditionResult = (fact.CurrentValue.Equals(test.Value)); }//Case#1
-                    //There will be more tests, such as 'greater than' for ints, etc.
+        /// <returns>Collection of  observations (IEnumerable)</returns>
+        public IEnumerable<Observation> GetObservations(FactState s)
+            {
+            List<Observation> observations = new List<Observation>();
 
-                    if (conditionResult)
-                        {
-                        return State.True;
-                        }
-                    else
-                        {
-                        return State.False;
-                        }             
+            Observation o;
+            foreach (Test t in this.tests)
+                {
+                o = t.Observation;
+                if (o != null && o.GetState() == s)
+                    {
+                    observations.Add(o);
                     }
-                return (s == FactState.Undefined) ? State.Undefined : State.Unknown;
-               */ /*
-                if(s == State.Unknown || s == State.Undefined)
-                    {
-                    return s;
-                    }
-
-                bool ConditionResult = false;
-                if(test.ComparisonOperator == Comparison.EqualTo)
-                    {
-                    ConditionResult = (fact.GetValue() == test.Value);
-                    }
-                //There will be more tests, such as 'greater than' for ints, etc.
-
-                if (ConditionResult)
-                    {
-                    return State.True;
-                    }
-                else
-                    {
-                    return State.False;
-                    }*/
-
-        /*
-        bool possibleFire;
-        bool fireDrillIsOn;
-        Fact handlePossibleFire;
-        public EventHandler handlePossibleFireChanged(Fact f)
-            {
-            if ((bool)f.Value)//There is a possible fire
-                {
-                possibleFire = true;
                 }
-            else
-                {
-                possibleFire = false;
-                }
+            return (IEnumerable<Observation>)observations;
             }
-
-        public EventHandler handleFireDrillStateChanged(Fact f)
-            {
-            if ((bool)f.Value)//There is a possible fire
-                {
-                fireDrillIsOn = false;
-                }
-            else
-                {
-                fireDrillIsOn = true;
-                }
-            }
-
-        private void setClauseValue()
-            {
-            if(!fireDrillIsOn && possibleFire)
-                {
-                this.State = true;
-                }
-            }
-        */
-        /// <summary>
-        /// Adds the condition to the dictionary of conditions
-        /// </summary>
-        /// <param name="fact">The fact.</param>
-        /// <param name="test">The test.</param>
-        /// <param name="value">The value.</param>
-        /// <exception cref="Exception">Value type does not match with Fact</exception>
-        public void AddCondition(ITest test)
-            {
-            //verify that value is of correct type
-            //if (!test.Value.GetType().Equals(fact.GetFactType()))
-            //  {
-            //throw new Exception("Value type does not match with Fact");
-            //  }
-            //Console.WriteLine();
-            //Console.WriteLine(fact + " " + test.ComparisonOperator + " " + test.Value);
-            //Add fact and corresponding value to dictionary
-
-            //this.ConditionMap.Add(fact, test);
-            this.Tests.Add(test);
-            }
-
-        /*OLD METHOD
-        /// <summary>
-        /// The state of the clause.
-        /// </summary>
-        /// <returns>bool; the state of the clause</returns>
-        public State GetState()
-            {
-            State state = State.Undefined;
-            bool possiblyUndefined = false;
-            //bool possiblyFalse = false;
-            bool possiblyUnknown = false;
-            foreach(Fact f in this.ConditionMap.Keys)
-                {
-                state = this.EvaluateCondition(f, this.ConditionMap[f]);
-                if(state == State.True)
-                    {
-                    return state;
-                    }    
-
-                //If it is not yet determined to be true, then check if it can be either undefined or false
-                if(state == State.Undefined) { possiblyUndefined = true; }
-                if(state == State.Unknown) { possiblyUnknown = true; }
-                //if(state == State.False) { possiblyFalse = true; }
-                }
-            /*LOGIC behind whether clause is true or false (or statements)
-             *============================================================
-             * All this code runs assuming it is NOT true, since otherwise it would never reach here (see RETURN statement in foreach loop).
-             * 
-             * Only if all conditions are false can the clause be false, since even a single undefined or unknown condition can mean that 
-             * the condition is either undefined or unknown given a certain number of false conditions.
-             * 
-             * Only if all conditions are unknown, or false and unknown, can the clause be unknown, since a single undefined condition can mean that 
-             * the condition is undefined given a certain number of unknown conditions.
-             * 
-             * If it's not false, unknown, or true, then its undefined.
-             *//*
-            if(!possiblyUndefined && !possiblyUnknown) { state = State.False; }//If not true, not possibly undefined and not possibly unknown, then all FALSE conditions -> return false
-            else if(!possiblyUndefined && possiblyUnknown) { state = State.Unknown; }//If not true, not possibly undefined and possibly unknown, then all UNKNOWN conditions of UNKNOWN+FALSE conditions -> return unknown
-            else { state = State.Undefined; }
-            return state;//If not true, not false, and not unknown, then must be undefined -> return undefined 
-            }*/
         }
     }
-
