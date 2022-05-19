@@ -6,21 +6,21 @@ using System.Threading.Tasks;
 
 namespace ExpertSystem_2
     {
-    class BoolFact : Fact
+    class IntFact : Fact
         {
         /// <summary>
         /// The value of the fact
         /// </summary>
-        private bool value;
+        private int value;
 
-        public BoolFact(string id, string description) : base(id, description) { }//Constructor
-        public BoolFact(ProxyFact proxyFact) : base(proxyFact) { }//Constructor
+        public IntFact(string id, string description) : base(id, description) { }//Constructor
+        public IntFact(ProxyFact proxyFact) : base(proxyFact) { }//Constructor
 
         /// <summary>
         /// Gets the value of this fact.
         /// </summary>
-        /// <returns>the boolean value</returns>
-        public override bool GetBoolValue()
+        /// <returns>the int value</returns>
+        public override int GetIntValue()
             {
             return this.value;
             }
@@ -28,7 +28,7 @@ namespace ExpertSystem_2
         /// <summary>
         /// Gets the value of this fact.
         /// </summary>
-        /// <returns>the boolean value</returns>
+        /// <returns>the int value</returns>
         public override object GetValue()
             {
             return this.value;
@@ -37,8 +37,8 @@ namespace ExpertSystem_2
         /// <summary>
         /// Sets the value of the fact.
         /// </summary>
-        /// <param name="value">The fact value (boolean)</param>
-        public override void SetValue(bool value)
+        /// <param name="value">The fact value (int)</param>
+        public override void SetValue(int value)
             {
             this.value = value;
             this.state = FactState.Known;

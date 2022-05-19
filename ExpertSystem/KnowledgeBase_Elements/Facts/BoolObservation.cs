@@ -6,18 +6,18 @@ using System.Threading.Tasks;
 
 namespace ExpertSystem_2
     {
-    class BoolFact : Fact
+    class BoolObservation : Observation
         {
         /// <summary>
-        /// The value of the fact
+        /// The value of the observation
         /// </summary>
         private bool value;
 
-        public BoolFact(string id, string description) : base(id, description) { }//Constructor
-        public BoolFact(ProxyFact proxyFact) : base(proxyFact) { }//Constructor
+        public BoolObservation(string id, string description, string prompt = "") : base(id, description, prompt) { }//Constructor
+        public BoolObservation(ProxyObservation proxyObs) : base(proxyObs) { }//Constructor
 
         /// <summary>
-        /// Gets the value of this fact.
+        /// Gets the value of this observation.
         /// </summary>
         /// <returns>the boolean value</returns>
         public override bool GetBoolValue()
@@ -28,16 +28,16 @@ namespace ExpertSystem_2
         /// <summary>
         /// Gets the value of this fact.
         /// </summary>
-        /// <returns>the boolean value</returns>
+        /// <returns>the int value</returns>
         public override object GetValue()
             {
             return this.value;
             }
 
         /// <summary>
-        /// Sets the value of the fact.
+        /// Sets the value of the observation.
         /// </summary>
-        /// <param name="value">The fact value (boolean)</param>
+        /// <param name="value">The observation value (boolean)</param>
         public override void SetValue(bool value)
             {
             this.value = value;
