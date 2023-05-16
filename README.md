@@ -1,5 +1,4 @@
-# Expert System - Ongoing Project
-
+# Expert System 
 For further information, please view the following google document: 
 
 =====================
@@ -14,4 +13,3 @@ An external resource we referenced was the April issue of Byte Magazine, from 19
 
 Note that this was only a starting point for us; what we have been implementing so far has advanced and changed much from the expert-system referred to in the magazine. However, the content presented in the issue is helpful to understand any rule-based expert-system. 
 
-Also note that the implementation is not complete--there is still much work left before we have a fully functioning Expert-System!
